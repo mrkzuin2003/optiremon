@@ -1,0 +1,147 @@
+{
+  "meta": {
+    "currency": "RUB",
+    "unit_note": "Цены ориентировочные для MVP. Для продакшена подключите актуальные прайсы (БД/поставщики/API).",
+    "updated_at": "2026-01-09"
+  },
+  "stores": [
+    {
+      "id": "avg",
+      "name": "Средняя по рынку"
+    },
+    {
+      "id": "leroy",
+      "name": "Леруа Мерлен"
+    },
+    {
+      "id": "ozon",
+      "name": "Ozon"
+    },
+    {
+      "id": "wb",
+      "name": "Wildberries"
+    },
+    {
+      "id": "ym",
+      "name": "Яндекс Маркет"
+    }
+  ],
+  "tiers": [
+    {
+      "id": "econom",
+      "name": "Эконом"
+    },
+    {
+      "id": "standard",
+      "name": "Стандарт"
+    },
+    {
+      "id": "premium",
+      "name": "Премиум"
+    }
+  ],
+  "materials": [
+    {
+      "id": "paint",
+      "name": "Краска",
+      "unit": "л"
+    },
+    {
+      "id": "putty",
+      "name": "Шпатлёвка",
+      "unit": "кг"
+    },
+    {
+      "id": "plaster",
+      "name": "Штукатурка",
+      "unit": "кг"
+    }
+  ],
+  "price_table": {
+    "avg": {
+      "econom": {
+        "paint": 320,
+        "putty": 40,
+        "plaster": 28
+      },
+      "standard": {
+        "paint": 450,
+        "putty": 55,
+        "plaster": 35
+      },
+      "premium": {
+        "paint": 680,
+        "putty": 80,
+        "plaster": 52
+      }
+    },
+    "leroy": {
+      "econom": {
+        "paint": 340,
+        "putty": 45,
+        "plaster": 30
+      },
+      "standard": {
+        "paint": 470,
+        "putty": 60,
+        "plaster": 38
+      },
+      "premium": {
+        "paint": 720,
+        "putty": 85,
+        "plaster": 55
+      }
+    },
+    "ozon": {
+      "econom": {
+        "paint": 310,
+        "putty": 42,
+        "plaster": 29
+      },
+      "standard": {
+        "paint": 460,
+        "putty": 58,
+        "plaster": 36
+      },
+      "premium": {
+        "paint": 700,
+        "putty": 82,
+        "plaster": 54
+      }
+    },
+    "wb": {
+      "econom": {
+        "paint": 300,
+        "putty": 38,
+        "plaster": 27
+      },
+      "standard": {
+        "paint": 440,
+        "putty": 52,
+        "plaster": 34
+      },
+      "premium": {
+        "paint": 660,
+        "putty": 78,
+        "plaster": 50
+      }
+    },
+    "ym": {
+      "econom": {
+        "paint": 330,
+        "putty": 44,
+        "plaster": 31
+      },
+      "standard": {
+        "paint": 480,
+        "putty": 61,
+        "plaster": 39
+      },
+      "premium": {
+        "paint": 730,
+        "putty": 88,
+        "plaster": 56
+      }
+    }
+  }
+}

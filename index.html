@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ОптиРемонт — ИИ-помощник при ремонте</title>
+  <meta name="description" content="ОптиРемонт — сервис, который рассчитывает материалы и стоимость, формирует смету и план работ, и отвечает на вопросы по ремонту." />
+  <style>
+    :root{--bg0:#050A18;--bg1:#071225;--bg2:#0A1D43;--line:rgba(255,255,255,.12);--text:#ECF3FF;--muted:#B8C7EA;--accent:#FFD24A;--accent2:#7EC7FF;--ok:#6BFFB0;--shadow:0 18px 60px rgba(0,0,0,.45);--r:22px}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text);
+      background:radial-gradient(900px 520px at 18% 10%, rgba(126,199,255,.20), transparent 60%),
+        radial-gradient(800px 520px at 82% 18%, rgba(255,210,74,.14), transparent 60%),
+        radial-gradient(900px 620px at 50% 120%, rgba(50,120,255,.10), transparent 55%),
+        linear-gradient(180deg,var(--bg0),var(--bg1) 35%,var(--bg2));
+      overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1180px;margin:0 auto;padding:0 22px}
+    .glass{background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));border:1px solid var(--line);box-shadow:var(--shadow);border-radius:var(--r);backdrop-filter:blur(10px)}
+    header{position:sticky;top:0;z-index:20;background:rgba(5,10,24,.55);border-bottom:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 0;gap:14px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.2px}
+    .mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg, rgba(126,199,255,.95), rgba(255,210,74,.92));display:grid;place-items:center;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+    .brand .name{display:flex;flex-direction:column;line-height:1.05}
+    .brand .name b{font-size:14px;opacity:.95}
+    .brand .name span{font-size:12px;color:var(--muted);font-weight:800}
+    nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    nav a{font-weight:900;font-size:13px;color:rgba(236,243,255,.92);padding:8px 10px;border-radius:999px}
+    nav a:hover{background:rgba(255,255,255,.06)}
+    .cta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{border:0;cursor:pointer;font-weight:950;padding:11px 14px;border-radius:999px;color:#0B1430;background:var(--accent);box-shadow:0 18px 42px rgba(255,210,74,.16);transition:transform .12s ease,filter .12s ease,background .12s ease;white-space:nowrap}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.03)}
+    .btn.secondary{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:var(--text);box-shadow:none}
+    .btn.small{padding:9px 12px;font-size:13px}
+    .btn.loading{opacity:.8;pointer-events:none}
+    section{padding:22px 0 44px}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin:0 0 12px}
+    .sectionTitle h2{margin:0;font-size:28px;letter-spacing:-.4px}
+    .sectionTitle p{margin:0;color:var(--muted);font-size:14px;line-height:1.4;max-width:64ch}
+    .pill{display:inline-flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--muted);font-size:12px;font-weight:950;width:fit-content}
+    .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 5px rgba(107,255,176,.10)}
+    .hero{padding:48px 0 22px}
+    .heroGrid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:stretch}
+    .heroCard{padding:22px}
+    h1{margin:14px 0 10px;font-size:48px;letter-spacing:-1px;line-height:1.02}
+    .lead{margin:0 0 16px;color:var(--muted);font-size:16.5px;line-height:1.7;max-width:65ch}
+    .heroActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .stats{margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .stat{padding:12px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)}
+    .stat b{display:block;font-size:14px}
+    .stat span{display:block;margin-top:4px;color:var(--muted);font-size:12.5px;line-height:1.35}
+    .sideCard{padding:22px;position:relative;overflow:hidden}
+    .sideCard:before{content:"";position:absolute;inset:-140px -160px auto auto;width:360px;height:360px;background:radial-gradient(circle at 30% 30%, rgba(126,199,255,.28), transparent 60%);transform:rotate(18deg);pointer-events:none}
+    .phone{width:min(300px,100%);margin:6px auto 0;border-radius:34px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.18);box-shadow:0 40px 90px rgba(0,0,0,.55)}
+    .screen{border-radius:26px;background:radial-gradient(520px 340px at 50% 0%, rgba(126,199,255,.24), transparent 55%),linear-gradient(180deg, rgba(10,29,67,.95), rgba(7,18,37,.95));border:1px solid rgba(255,255,255,.10);padding:16px;min-height:420px;position:relative;overflow:hidden}
+    .notch{width:126px;height:22px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);margin:0 auto 14px}
+    .appLogo{width:62px;height:62px;border-radius:18px;background:linear-gradient(135deg, rgba(126,199,255,.95), rgba(255,210,74,.92));display:grid;place-items:center;margin:18px auto 10px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+    .screen h3{margin:0;text-align:center;font-size:16px;letter-spacing:.2px}
+    .screen p{margin:6px 0 0;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.4}
+    .loader{margin:16px auto 0;width:160px;height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(255,255,255,.10)}
+    .loader>i{display:block;height:100%;width:48%;background:linear-gradient(90deg, rgba(126,199,255,.95), rgba(255,210,74,.92));border-radius:999px;animation:move 1.2s ease-in-out infinite}
+    @keyframes move{0%{transform:translateX(-10%)}50%{transform:translateX(120%)}100%{transform:translateX(-10%)}}
+    .miniGrid{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .miniTile{padding:12px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10)}
+    .miniTile b{display:block;font-size:12.5px}
+    .miniTile span{display:block;color:var(--muted);margin-top:4px;font-size:11.5px;line-height:1.35}
+    .calcGrid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:start}
+    .calcCard{padding:18px}
+    .calcHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+    .badge{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;background:rgba(255,210,74,.14);border:1px solid rgba(255,210,74,.22);color:rgba(255,210,74,.96);font-size:12px;font-weight:950;white-space:nowrap}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:rgba(184,199,234,.92);font-weight:950}
+    .control,select{width:100%;padding:12px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--text);outline:none;font-size:14px}
+    select option{background:#091633;color:var(--text)}
+    .control:focus,select:focus{border-color:rgba(126,199,255,.55);box-shadow:0 0 0 5px rgba(126,199,255,.12)}
+    .hint{grid-column:1/-1;padding:12px 12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.16);color:var(--muted);font-size:12.5px;line-height:1.45}
+    .results{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .kpi{padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+    .kpi.accent{border-color:rgba(255,210,74,.22);background:linear-gradient(180deg, rgba(255,210,74,.10), rgba(255,255,255,.03))}
+    .kpi .t{font-size:12px;color:var(--muted);font-weight:950}
+    .kpi .v{margin-top:8px;font-size:22px;font-weight:980}
+    .kpi .s{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
+    .actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+    .panel{padding:18px}
+    .panel h3{margin:0 0 10px;font-size:18px;letter-spacing:-.2px}
+    .list{display:grid;gap:10px}
+    .item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12)}
+    .icon{width:34px;height:34px;border-radius:14px;background:rgba(126,199,255,.16);border:1px solid rgba(126,199,255,.24);display:grid;place-items:center;flex:0 0 auto}
+    .item b{display:block;margin-top:2px}
+    .item span{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:3px}
+    .subtle{color:var(--muted);font-size:12.5px;line-height:1.45}
+    .pricingGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    .plan{padding:18px;position:relative;overflow:hidden}
+    .plan:before{content:"";position:absolute;inset:-120px -120px auto auto;width:260px;height:260px;background:radial-gradient(circle at 30% 30%, rgba(126,199,255,.18), transparent 60%);transform:rotate(18deg);pointer-events:none}
+    .planHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .planName{font-weight:980;font-size:18px;letter-spacing:-.2px}
+    .planPrice{font-weight:980;font-size:20px}
+    .planPrice span{color:var(--muted);font-size:12px;font-weight:900}
+    .planTag{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--muted);font-size:12px;font-weight:950;white-space:nowrap}
+    .plan ul{margin:12px 0 0;padding-left:18px;color:var(--muted);font-weight:700;line-height:1.55}
+    .plan.featured{border-color:rgba(255,210,74,.24);background:linear-gradient(180deg, rgba(255,210,74,.10), rgba(255,255,255,.04))}
+    .cards3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    .case{padding:18px}
+    .case .k{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--muted);font-size:12px;font-weight:950}
+    .case p{margin:10px 0 0;color:var(--muted);line-height:1.6}
+    .case b{font-weight:980}
+    .faq{display:grid;gap:10px}
+    details{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:18px;padding:10px 12px}
+    summary{cursor:pointer;list-style:none;font-weight:950;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 4px}
+    summary::-webkit-details-marker{display:none}
+    .faqAns{color:var(--muted);margin:8px 4px 4px;line-height:1.6}
+    .chatWrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    .chatCard{padding:18px}
+    .chatBox{border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);border-radius:18px;padding:12px;height:340px;overflow:auto}
+    .msg{display:flex;gap:10px;margin:10px 0}
+    .bubble{max-width:86%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word}
+    .msg.user{justify-content:flex-end}
+    .msg.user .bubble{background:rgba(126,199,255,.16);border-color:rgba(126,199,255,.22)}
+    .chatInputRow{display:flex;gap:10px;margin-top:10px}
+    .chatInputRow input{flex:1 1 auto;padding:12px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--text);outline:none;font-size:14px}
+    .chatHint{margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.5}
+    .floatChatBtn{position:fixed;right:18px;bottom:18px;z-index:50;border-radius:999px;padding:12px 14px;display:flex;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--text);backdrop-filter:blur(10px);box-shadow:0 18px 60px rgba(0,0,0,.45);cursor:pointer;font-weight:950}
+    .floatChatBtn b{color:var(--accent)}
+    .floatChatBtn:hover{background:rgba(255,255,255,.10)}
+    .reveal{opacity:0;transform:translateY(12px);transition:opacity .6s ease,transform .6s ease}
+    .reveal.show{opacity:1;transform:translateY(0)}
+    footer{padding:26px 0 34px;border-top:1px solid rgba(255,255,255,.10);color:var(--muted);font-size:12.5px}
+    .footRow{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .tiny{opacity:.95;max-width:90ch;margin-top:10px;line-height:1.5}
+    @media (max-width:980px){
+      .heroGrid{grid-template-columns:1fr} h1{font-size:38px}
+      .stats{grid-template-columns:1fr} .calcGrid{grid-template-columns:1fr}
+      .form{grid-template-columns:1fr} .results{grid-template-columns:1fr}
+      .pricingGrid{grid-template-columns:1fr} .cards3{grid-template-columns:1fr}
+      .chatWrap{grid-template-columns:1fr} nav{display:none}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-8.5Z" stroke="#091633" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M9.3 12.7 11 14.4l3.6-4" stroke="#091633" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="name"><b>ОптиРемонт</b><span>ИИ-помощник при ремонте</span></div>
+      </div>
+      <nav>
+        <a href="#calc">Калькулятор</a><a href="#pricing">Тарифы</a><a href="#cases">Кейсы</a><a href="#faq">FAQ</a><a href="#chat">Чат</a>
+      </nav>
+      <div class="cta">
+        <button class="btn secondary" onclick="document.querySelector('#calc').scrollIntoView({behavior:'smooth'})">Открыть калькулятор</button>
+        <button class="btn" onclick="document.querySelector('#chat').scrollIntoView({behavior:'smooth'})">Задать вопрос</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div class="heroGrid">
+      <div class="glass heroCard reveal">
+        <div class="pill"><span class="dot"></span> Прозрачная смета • оптимальные материалы • контроль бюджета</div>
+        <h1>Современный ремонт —<br>в одном помощнике</h1>
+        <p class="lead"><b>ОптиРемонт</b> анализирует ваш план, помогает посчитать материалы и стоимость, формирует смету и план работ, и отвечает на вопросы по ремонту — чтобы всё было прогнозируемо и без переплат.</p>
+        <div class="heroActions">
+          <button class="btn" onclick="document.querySelector('#calc').scrollIntoView({behavior:'smooth'})">Рассчитать материалы</button>
+          <button class="btn secondary" onclick="document.querySelector('#pricing').scrollIntoView({behavior:'smooth'})">Посмотреть тарифы</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>Материалы + стоимость</b><span>Количество, упаковки и цена в ₽.</span></div>
+          <div class="stat"><b>Эконом / Стандарт / Премиум</b><span>Варьируйте качество и бюджет за минуту.</span></div>
+          <div class="stat"><b>Чат по ремонту</b><span>Ответы и чек-листы прямо на сайте.</span></div>
+        </div>
+      </div>
+      <div class="glass sideCard reveal">
+        <div class="phone" aria-hidden="true">
+          <div class="screen">
+            <div class="notch"></div>
+            <div class="appLogo">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-8.5Z" stroke="#091633" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M9.3 12.7 11 14.4l3.6-4" stroke="#091633" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>ОптиРемонт</h3><p>Загружаем проект • готовим расчёты</p>
+            <div class="loader"><i></i></div>
+            <div class="miniGrid">
+              <div class="miniTile"><b>Смета</b><span>Материалы + работы</span></div>
+              <div class="miniTile"><b>План</b><span>Этапы и сроки</span></div>
+              <div class="miniTile"><b>Цены</b><span>Магазины/маркетплейсы</span></div>
+              <div class="miniTile"><b>Приёмка</b><span>Чек-листы и контроль</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="subtle" style="margin:14px 0 0">Дизайн легко адаптируется под ваш фирменный стиль (синий/голубой + жёлтый акцент).</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="calc">
+    <div class="sectionTitle"><h2>Калькулятор материалов и стоимости</h2><p>Выберите магазин и сегмент — цена подставится автоматически (API/справочник).</p></div>
+    <div class="calcGrid">
+      <div class="glass calcCard reveal">
+        <div class="calcHead">
+          <div><div style="font-weight:980;font-size:18px;letter-spacing:-.2px">Расчёт за 10 секунд</div><div style="color:var(--muted);font-weight:900;font-size:13px;margin-top:4px">Количество • упаковки • стоимость • ₽/м²</div></div>
+          <div class="badge">MVP • API цен</div>
+        </div>
+
+        <div class="form">
+          <div class="field"><label for="surface">Поверхность</label>
+            <select id="surface"><option value="wall">Стена</option><option value="floor">Пол</option><option value="ceiling">Потолок</option></select>
+          </div>
+
+          <div class="field"><label for="area">Площадь (м²)</label>
+            <input class="control" id="area" type="number" min="0" step="0.1" placeholder="например, 18.5" />
+          </div>
+
+          <div class="field"><label for="material">Материал</label>
+            <select id="material"><option value="paint">Краска</option><option value="putty">Шпатлёвка</option><option value="plaster">Штукатурка</option></select>
+          </div>
+
+          <div class="field" id="coatsField"><label for="coats">Слоёв краски</label>
+            <input class="control" id="coats" type="number" min="1" step="1" value="2" />
+          </div>
+
+          <div class="field" id="thicknessField" style="display:none;"><label for="thickness">Толщина слоя (мм)</label>
+            <input class="control" id="thickness" type="number" min="0.5" step="0.5" value="2" />
+          </div>
+
+          <div class="field"><label for="waste">Запас на потери (%)</label>
+            <input class="control" id="waste" type="number" min="0" step="1" value="10" />
+          </div>
+
+          <div class="field"><label for="store">Магазин / маркетплейс</label><select id="store"></select></div>
+          <div class="field"><label for="tier">Сегмент</label><select id="tier"></select></div>
+
+          <div class="field"><label for="pricePerUnit">Цена (<span id="priceUnitLabel">₽</span>)</label>
+            <input class="control" id="pricePerUnit" type="number" min="0" step="1" />
+          </div>
+
+          <div class="field"><label for="pack">Фасовка</label>
+            <select id="pack">
+              <option value="auto">Авто (по материалу)</option>
+              <option value="paint_2_5">Краска 2.5 л</option>
+              <option value="paint_10">Краска 10 л</option>
+              <option value="dry_20">Сухая смесь 20 кг</option>
+              <option value="dry_25">Сухая смесь 25 кг</option>
+              <option value="dry_30">Сухая смесь 30 кг</option>
+            </select>
+          </div>
+
+          <div class="hint" id="normsHint"><b>Подсказка:</b> цена подставляется автоматически из справочника, но её можно изменить вручную. Расход зависит от основания и техкарты производителя.</div>
+        </div>
+
+        <div class="results">
+          <div class="kpi accent"><div class="t">Итого материала</div><div class="v" id="totalVal">—</div><div class="s" id="totalSub">Введите площадь и выберите материал</div></div>
+          <div class="kpi"><div class="t">Упаковок</div><div class="v" id="packsVal">—</div><div class="s" id="packsSub">Фасовка: —</div></div>
+          <div class="kpi"><div class="t">Стоимость</div><div class="v" id="costVal">—</div><div class="s" id="costSub">Выберите параметры расчёта</div></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="calcBtn">Рассчитать</button>
+          <button class="btn secondary" id="resetBtn">Сбросить</button>
+        </div>
+      </div>
+
+      <div class="glass panel reveal">
+        <h3>Что вы получаете</h3>
+        <div class="list">
+          <div class="item"><div class="icon">✓</div><div><b>Расчёт материалов</b><span>Количество, упаковки и запас на потери.</span></div></div>
+          <div class="item"><div class="icon">₽</div><div><b>Оценка стоимости</b><span>По магазинам/маркетплейсам и сегментам.</span></div></div>
+          <div class="item"><div class="icon">🧠</div><div><b>ИИ‑помощник</b><span>Ответы по технологии и типовым ошибкам.</span></div></div>
+          <div class="item"><div class="icon">📋</div><div><b>Чек‑листы приёмки</b><span>Чтобы не пропустить критичные дефекты.</span></div></div>
+        </div>
+
+        <div class="actions" style="margin-top:14px">
+          <button class="btn small" id="refreshBtn">Обновить цены</button>
+          <button class="btn secondary small" id="showSourceBtn">Источник цен</button>
+        </div>
+        <p class="subtle" id="apiHint" style="margin:12px 0 0">Запустите сервер (npm start), чтобы работали /api/prices и чат.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="sectionTitle"><h2>Тарифы</h2><p>Начните бесплатно и повышайте уровень, когда потребуется расширенная смета, помощь и контроль.</p></div>
+    <div class="pricingGrid">
+      <div class="glass plan reveal">
+        <div class="planHeader">
+          <div><div class="planName">Планировщик</div><div class="planTag">Free</div></div>
+          <div class="planPrice">0 ₽<br><span>навсегда</span></div>
+        </div>
+        <ul><li>Базовый калькулятор материалов</li><li>Сегменты цен: эконом/стандарт/премиум</li><li>Смета материалов (черновик)</li></ul>
+        <div class="actions"><button class="btn secondary" onclick="alert('Демо: подключение тарифа')">Выбрать план</button></div>
+      </div>
+
+      <div class="glass plan featured reveal">
+        <div class="planHeader">
+          <div><div class="planName">Прораб</div><div class="planTag">Хит</div></div>
+          <div class="planPrice">1499 ₽<br><span>в месяц</span></div>
+        </div>
+        <ul><li>Смета материалов + работ</li><li>План-график работ (черновик)</li><li>Чек‑листы приёмки по этапам</li><li>Чат‑помощник по ремонту</li></ul>
+        <div class="actions"><button class="btn" onclick="alert('Демо: подключение тарифа')">Выбрать план</button></div>
+      </div>
+
+      <div class="glass plan reveal">
+        <div class="planHeader">
+          <div><div class="planName">Застройщик</div><div class="planTag">Premium</div></div>
+          <div class="planPrice">4999 ₽<br><span>в месяц</span></div>
+        </div>
+        <ul><li>Полная смета + контроль бюджета</li><li>Рекомендации по закупкам и логистике</li><li>Расширенная приёмка и контроль качества</li><li>Приоритетная поддержка</li></ul>
+        <div class="actions"><button class="btn secondary" onclick="alert('Демо: подключение тарифа')">Выбрать план</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cases">
+    <div class="sectionTitle"><h2>Кейсы и отзывы</h2><p>Примеры того, как пользователи используют ОптиРемонт, чтобы держать ремонт под контролем.</p></div>
+    <div class="cards3">
+      <div class="glass case reveal"><div class="k"><b>Косметика кухни • 12 м²</b><span class="chip">Экономия ~10–15%</span></div><p>Пользователь пересчитал <b>краску и шпаклёвку</b>, убрал лишние позиции и заранее заложил запас на потери — без «доборов» в середине ремонта.</p></div>
+      <div class="glass case reveal"><div class="k"><b>Комната • 18 м²</b><span class="chip">Сроки под контролем</span></div><p>Сервис помог разложить ремонт на этапы и понять, что сначала нужна подготовка основания, потом финиш, а не наоборот.</p></div>
+      <div class="glass case reveal"><div class="k"><b>Санузел • подготовка стен</b><span class="chip">Без ошибок</span></div><p>Чат подсказал нюансы по грунтовке и влажности, а чек‑лист приёмки помог не принять работу с дефектами.</p></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="sectionTitle"><h2>FAQ</h2><p>Короткие ответы на частые вопросы.</p></div>
+    <div class="faq">
+      <details class="reveal"><summary>Насколько точны расчёты материалов? <span>+</span></summary><div class="faqAns">Это оценка на основе типовых норм. Реальный расход зависит от основания, технологии нанесения и техкарт производителя. Мы рекомендуем закладывать запас 5–15%.</div></details>
+      <details class="reveal"><summary>Можно ли «подтянуть» реальные цены из магазинов? <span>+</span></summary><div class="faqAns">Да, через backend: из вашей базы прайсов, CSV/Google Sheets или официальных API. В демо цены лежат в prices.json и доступны через /api/prices.</div></details>
+      <details class="reveal"><summary>Чат даёт советы по СНиП/ГОСТ? <span>+</span></summary><div class="faqAns">Чат подсказывает общий подход и типовые проверки. Для критичных решений (электрика, газ, несущие конструкции) привлекайте профильных специалистов и следуйте нормам.</div></details>
+      <details class="reveal"><summary>Можно ли добавить больше материалов? <span>+</span></summary><div class="faqAns">Да. В MVP список материалов расширяется в коде калькулятора и в prices.json (для цен).</div></details>
+    </div>
+  </section>
+
+  <section id="chat">
+    <div class="sectionTitle"><h2>Чат по ремонту (DeepSeek)</h2><p>Задайте вопрос: технология нанесения, порядок работ, типовые ошибки, приёмка. Чат работает через backend и использует ключ из .env.</p></div>
+    <div class="chatWrap">
+      <div class="glass chatCard reveal">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="font-weight:980">ИИ‑помощник</div><span class="chip" id="chatStatus">Статус: готов</span></div>
+        <div class="chatBox" id="chatBox" aria-live="polite"></div>
+        <div class="chatInputRow"><input id="chatInput" placeholder="Например: Как подготовить стену под покраску?" /><button class="btn small" id="chatSend">Отправить</button></div>
+        <div class="chatHint"><b>Важно:</b> если сервер выдаёт ошибку про ключ — создайте файл <b>.env</b> и добавьте <b>DEEPSEEK_API_KEY</b>.</div>
+      </div>
+      <div class="glass panel reveal">
+        <h3>Примеры вопросов</h3>
+        <div class="list">
+          <div class="item"><div class="icon">?</div><div><b>Подготовка</b><span>«Как правильно грунтовать перед шпаклёвкой?»</span></div></div>
+          <div class="item"><div class="icon">🧱</div><div><b>Основание</b><span>«Что выбрать: штукатурка или ГКЛ для выравнивания?»</span></div></div>
+          <div class="item"><div class="icon">🎨</div><div><b>Покраска</b><span>«Сколько слоёв краски нужно и какая укрывистость?»</span></div></div>
+          <div class="item"><div class="icon">✅</div><div><b>Приёмка</b><span>«Как понять, что стены готовы под финиш?»</span></div></div>
+        </div>
+        <p class="subtle" style="margin-top:12px">Ответы носят справочный характер. Для сложных случаев уточняйте у мастера и по техкартам материалов.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footRow"><div>© <span id="year"></span> ОптиРемонт</div><div style="opacity:.9">Калькулятор • Тарифы • FAQ • Чат</div></div>
+    <div class="tiny">Расчёты и цены в демо-версии ориентировочные и зависят от бренда, основания и технологии нанесения. Для продакшена подключите актуальные прайсы (БД/поставщики/API) и нормы из техкарт.</div>
+  </footer>
+</main>
+
+<button class="floatChatBtn" id="floatChatBtn" title="Открыть чат">💬 Чат <b>DeepSeek</b></button>
+
+<script>
+  const obs=new IntersectionObserver((entries)=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  document.getElementById('year').textContent=new Date().getFullYear();
+
+  const els={area:area,material:material,coatsField:coatsField,coats:coats,thicknessField:thicknessField,thickness:thickness,waste:waste,store:store,tier:tier,pricePerUnit:pricePerUnit,priceUnitLabel:priceUnitLabel,pack:pack,totalVal:totalVal,totalSub:totalSub,packsVal:packsVal,packsSub:packsSub,costVal:costVal,costSub:costSub,normsHint:normsHint,apiHint:apiHint,calcBtn:calcBtn,resetBtn:resetBtn,refreshBtn:refreshBtn,showSourceBtn:showSourceBtn};
+  const norms={paint:{unit:"л",coverage_m2_per_l_per_coat:10,defaultPack:{label:"Краска 10 л",size:10,unit:"л"}},putty:{unit:"кг",kg_per_m2_per_mm:1.2,defaultPack:{label:"Сухая смесь 25 кг",size:25,unit:"кг"}},plaster:{unit:"кг",kg_per_m2_per_10mm:8.5,defaultPack:{label:"Сухая смесь 30 кг",size:30,unit:"кг"}}};
+  let priceBook=null;
+  const formatNumber=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:2});
+  const formatRub=n=>n.toLocaleString('ru-RU',{maximumFractionDigits:0})+" ₽";
+  function getSelectedPack(materialKey){
+    const v=els.pack.value;
+    if(v==="auto") return norms[materialKey].defaultPack;
+    const map={paint_2_5:{label:"Краска 2.5 л",size:2.5,unit:"л"},paint_10:{label:"Краска 10 л",size:10,unit:"л"},dry_20:{label:"Сухая смесь 20 кг",size:20,unit:"кг"},dry_25:{label:"Сухая смесь 25 кг",size:25,unit:"кг"},dry_30:{label:"Сухая смесь 30 кг",size:30,unit:"кг"}};
+    return map[v]||norms[materialKey].defaultPack;
+  }
+  function setPriceFromBook(){
+    if(!priceBook) return;
+    const storeId=els.store.value, tierId=els.tier.value, mat=els.material.value;
+    const table=priceBook.price_table||{};
+    const price=(((table[storeId]||{})[tierId]||{})[mat]);
+    if(typeof price==="number"&&isFinite(price)) els.pricePerUnit.value=String(price);
+    if(priceBook.meta&&priceBook.meta.updated_at) els.apiHint.innerHTML="Источник: <b>/api/prices</b> • обновлено: <b>"+priceBook.meta.updated_at+"</b>.";
+  }
+  function syncFields(){
+    const mat=els.material.value;
+    if(mat==="paint"){els.coatsField.style.display="flex";els.thicknessField.style.display="none";}
+    else{els.coatsField.style.display="none";els.thicknessField.style.display="flex";}
+    els.priceUnitLabel.textContent=norms[mat].unit==="л"?"₽/л":"₽/кг";
+    setPriceFromBook();
+    const p=(els.pack.value==="auto")?norms[mat].defaultPack:getSelectedPack(mat);
+    els.packsSub.textContent="Фасовка: "+p.label;
+    if(priceBook&&priceBook.meta){
+      const m=priceBook.meta;
+      els.normsHint.innerHTML="<b>Подсказка:</b> цена подставляется автоматически (API/справочник). "+(m.unit_note||"Цены ориентировочные.")+" Вы можете изменить цену вручную.";
+    }
+  }
+  function calculate(){
+    const areaV=Number(els.area.value);
+    if(!isFinite(areaV)||areaV<=0){els.totalVal.textContent="—";els.totalSub.textContent="Введите корректную площадь (м²)";els.packsVal.textContent="—";els.costVal.textContent="—";els.costSub.textContent="Выберите параметры расчёта";return;}
+    const mat=els.material.value;
+    const wastePct=Math.max(0,Number(els.waste.value)||0)/100;
+    const pricePerUnitV=Math.max(0,Number(els.pricePerUnit.value)||0);
+    let qty=0, explain="";
+    if(mat==="paint"){const coatsV=Math.max(1,Math.floor(Number(els.coats.value)||1));qty=(areaV/norms.paint.coverage_m2_per_l_per_coat)*coatsV;explain=`Площадь ${formatNumber(areaV)} м² · ${coatsV} слой(я) при норме 10 м²/л`; }
+    else if(mat==="putty"){const mm=Math.max(0.5,Number(els.thickness.value)||2);qty=areaV*norms.putty.kg_per_m2_per_mm*mm;explain=`Площадь ${formatNumber(areaV)} м² · ${formatNumber(mm)} мм при норме 1.2 кг/м²·мм`; }
+    else {const mm=Math.max(1,Number(els.thickness.value)||10);qty=areaV*(norms.plaster.kg_per_m2_per_10mm/10)*mm;explain=`Площадь ${formatNumber(areaV)} м² · ${formatNumber(mm)} мм при норме 8.5 кг/м² на 10 мм`; }
+    const qtyWithWaste=qty*(1+wastePct);
+    const packObj=getSelectedPack(mat);
+    const packsRounded=Math.ceil(qtyWithWaste/packObj.size);
+    els.totalVal.textContent=`${formatNumber(qtyWithWaste)} ${norms[mat].unit}`;
+    els.totalSub.textContent=`${explain}. Запас: ${Math.round(wastePct*100)}%.`;
+    els.packsVal.textContent=`${packsRounded} шт.`;
+    if(pricePerUnitV<=0){els.costVal.textContent="—";els.costSub.textContent="Укажите цену (или выберите магазин/сегмент)";return;}
+    const costExact=qtyWithWaste*pricePerUnitV;
+    const costPerM2=costExact/areaV;
+    const packCost=packObj.size*pricePerUnitV;
+    const costByPacks=packsRounded*packCost;
+    els.costVal.textContent=formatRub(costByPacks);
+    els.costSub.textContent=`По упаковкам (округление вверх). Точно: ${formatRub(costExact)}. Ориентир: ${formatRub(costPerM2)} / м².`;
+  }
+  function reset(){els.area.value="";els.material.value="paint";els.coats.value=2;els.thickness.value=2;els.waste.value=10;els.pack.value="auto";setPriceFromBook();els.totalVal.textContent="—";els.totalSub.textContent="Введите площадь и выберите материал";els.packsVal.textContent="—";els.costVal.textContent="—";els.costSub.textContent="Выберите параметры расчёта";syncFields();}
+  async function loadPriceBook(){
+    let loaded=false;
+    try{const res=await fetch("/api/prices",{cache:"no-store"});if(res.ok){priceBook=await res.json();loaded=true;}}catch(e){}
+    if(!loaded){try{const res=await fetch("prices.json",{cache:"no-store"});if(res.ok){priceBook=await res.json();loaded=true;}}catch(e){}}
+    if(!priceBook){priceBook={meta:{updated_at:"локально",unit_note:"Запустите сервер (npm start), чтобы работали /api/prices и чат."},stores:[{id:"avg",name:"Средняя по рынку"}],tiers:[{id:"standard",name:"Стандарт"}],price_table:{avg:{standard:{paint:450,putty:55,plaster:35}}}};}
+    els.store.innerHTML="";(priceBook.stores||[]).forEach(s=>{const opt=document.createElement("option");opt.value=s.id;opt.textContent=s.name;els.store.appendChild(opt);});
+    els.tier.innerHTML="";(priceBook.tiers||[]).forEach(t=>{const opt=document.createElement("option");opt.value=t.id;opt.textContent=t.name;els.tier.appendChild(opt);});
+    if(els.store.options.length) els.store.value="avg";
+    if(els.tier.options.length) els.tier.value="standard";
+    syncFields();
+  }
+  async function refreshPrices(){
+    els.refreshBtn.classList.add("loading");els.refreshBtn.textContent="Обновляем…";
+    try{const res=await fetch("/api/prices/refresh",{method:"POST"});if(!res.ok) throw new Error("HTTP "+res.status);priceBook=await res.json();syncFields();calculate();}
+    catch(e){alert("Не удалось обновить цены. Убедитесь, что запущен сервер (npm start).");}
+    finally{els.refreshBtn.classList.remove("loading");els.refreshBtn.textContent="Обновить цены";}
+  }
+  function showSource(){const src=(priceBook&&priceBook.meta)?JSON.stringify(priceBook.meta,null,2):"{}";alert("Метаданные источника цен:\n\n"+src);}
+  els.material.addEventListener('change',()=>{syncFields();calculate();});
+  els.pack.addEventListener('change',()=>{syncFields();calculate();});
+  els.store.addEventListener('change',()=>{setPriceFromBook();calculate();});
+  els.tier.addEventListener('change',()=>{setPriceFromBook();calculate();});
+  els.calcBtn.addEventListener('click',calculate);
+  els.resetBtn.addEventListener('click',reset);
+  els.refreshBtn.addEventListener('click',refreshPrices);
+  els.showSourceBtn.addEventListener('click',showSource);
+  ["area","coats","thickness","waste","pricePerUnit"].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown',e=>{if(e.key==="Enter")calculate();});
+    document.getElementById(id).addEventListener('input',()=>{const a=Number(els.area.value);if(isFinite(a)&&a>0)calculate();});
+  });
+
+  // Chat
+  const chatBox=document.getElementById('chatBox');
+  const chatInput=document.getElementById('chatInput');
+  const chatSend=document.getElementById('chatSend');
+  const chatStatus=document.getElementById('chatStatus');
+  const floatChatBtn=document.getElementById('floatChatBtn');
+  const chatHistory=[];
+  function addMsg(role,content){
+    const row=document.createElement('div');
+    row.className='msg '+(role==='user'?'user':'assistant');
+    const bubble=document.createElement('div');
+    bubble.className='bubble';
+    bubble.textContent=content;
+    row.appendChild(bubble);
+    chatBox.appendChild(row);
+    chatBox.scrollTop=chatBox.scrollHeight;
+  }
+  function setChatStatus(t){chatStatus.textContent="Статус: "+t;}
+  async function sendChat(){
+    const text=(chatInput.value||"").trim();
+    if(!text) return;
+    chatInput.value="";
+    addMsg('user',text);
+    chatHistory.push({role:'user',content:text});
+    setChatStatus("печатает…");
+    chatSend.classList.add("loading");chatSend.textContent="...";
+    try{
+      const resp=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:chatHistory.slice(-10)})});
+      const data=await resp.json();
+      if(!resp.ok){
+        const msg=data?.error?(data.error+(data.details?"\n"+data.details:"")):"Ошибка";
+        addMsg('assistant',"Не удалось получить ответ.\n"+msg);
+        setChatStatus("ошибка"); return;
+      }
+      const answer=data?.answer||"Ответ пустой.";
+      addMsg('assistant',answer);
+      chatHistory.push({role:'assistant',content:answer});
+      setChatStatus("готов");
+    }catch(e){
+      addMsg('assistant',"Не удалось связаться с сервером. Проверьте, что запущен npm start.");
+      setChatStatus("ошибка");
+    }finally{
+      chatSend.classList.remove("loading");chatSend.textContent="Отправить";
+    }
+  }
+  chatSend.addEventListener('click',sendChat);
+  chatInput.addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+  addMsg('assistant',"Привет! Я помогу с ремонтом: технологии, порядок работ, подготовка основания, приёмка. Что нужно сделать?");
+  floatChatBtn.addEventListener('click',()=>{document.querySelector('#chat').scrollIntoView({behavior:'smooth'});setTimeout(()=>chatInput.focus(),450);});
+
+  loadPriceBook().then(()=>syncFields());
+</script>
+</body>
+</html>
